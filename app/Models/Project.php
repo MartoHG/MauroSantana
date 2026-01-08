@@ -18,6 +18,7 @@ protected $fillable = [
     'categoria',
     'estado',
     'pdf_path',
+    'pdf_hash',
     'qr_path',
     'imagen_path',   
     'user_id',

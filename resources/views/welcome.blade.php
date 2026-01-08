@@ -40,6 +40,7 @@
     scrollbar-width: none;
 }
     </style>
+    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
 
@@ -121,11 +122,17 @@
 
 <section id="proyectos" class="py-20 bg-gray-50 overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
-            <div class="text-center mb-10">
-                <span class="text-mauro-blue font-bold tracking-widest uppercase text-sm">Transparencia</span>
-                <h2 class="text-4xl font-black text-gray-900 mt-2">Labor Legislativa</h2>
-                <div class="w-20 h-1.5 bg-mauro-yellow mx-auto mt-4 rounded-full"></div>
-            </div>
+<div class="text-center mb-10">
+    <span class="text-mauro-blue font-bold tracking-widest uppercase text-sm">Transparencia</span>
+    <h2 class="text-4xl font-black text-gray-900 mt-2">Labor Legislativa</h2>
+    <div class="w-20 h-1.5 bg-mauro-yellow mx-auto mt-4 rounded-full mb-6"></div>
+
+    {{-- NUEVO BOTÓN VER TODO --}}
+    <a href="{{ route('projects.public') }}" class="inline-flex items-center px-6 py-2 border-2 border-mauro-blue text-mauro-blue font-bold rounded-full hover:bg-mauro-blue hover:text-white transition duration-300 group">
+        Ver Todo el Historial
+        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+    </a>
+</div>
         </div>
 
         @if($projects->count() > 0)

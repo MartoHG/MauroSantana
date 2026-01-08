@@ -26,4 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('projects', ProjectController::class);
 });
 
+// Ruta pública para el buscador avanzado
+Route::get('/labor-legislativa', [App\Http\Controllers\ProjectController::class, 'publicIndex'])->name('projects.public');
+
 require __DIR__.'/auth.php';
