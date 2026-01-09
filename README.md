@@ -22,5 +22,5 @@ El objetivo principal es modernizar la forma en que se comunican las iniciativas
 * **Compartir:** Generación de enlaces y soporte para Códigos QR.
 * **Gestión (Admin):** Panel para subir, editar y administrar los proyectos.
 
-* **Desarrollado por [Tu Nombre]**
+* **Desarrollado por Martiniano Gavotti**
 Estudiante de Análisis de Sistemas.
