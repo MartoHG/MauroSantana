@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule; // Importante para validar duplicados
+use Illuminate\Validation\Rule;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ProjectController extends Controller
@@ -23,30 +23,26 @@ class ProjectController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validaciones Básicas
+        // 1. Validaciones Completas (Incluye descripción)
         $request->validate([
-            'tipo' => 'required|in:Proyecto,Ordenanza',
-            'categoria' => 'required',
-            'fecha' => 'required|date',
-            'pdf' => 'required|mimes:pdf|max:20480',
-            'imagen' => 'nullable|image|max:10240',
-            
-            // VALIDACIÓN DE TÍTULO DUPLICADO (Por Tipo)
             'titulo' => [
                 'required',
                 Rule::unique('projects')->where(function ($query) use ($request) {
                     return $query->where('tipo', $request->tipo);
                 }),
             ],
+            'tipo' => 'required|in:Proyecto,Ordenanza',
+            'categoria' => 'required',
+            'fecha' => 'required|date',
+            'pdf' => 'required|mimes:pdf|max:20480',
+            'imagen' => 'nullable|image|max:10240',
+            'descripcion' => 'nullable|string', // AHORA SE VALIDA LA DESCRIPCIÓN
         ], [
             'titulo.unique' => 'Ya existe un documento de tipo "' . $request->tipo . '" con este título exacto.'
         ]);
 
-        // 2. CONTROL DE DUPLICADOS DE PDF (Por contenido/hash)
-        // Calculamos la huella digital del archivo subido (SHA-256)
+        // 2. Control de Duplicados de PDF (Hash)
         $uploadedFileHash = hash_file('sha256', $request->file('pdf')->getRealPath());
-
-        // Buscamos si ya existe ese hash para el mismo TIPO de documento
         $duplicatePdf = Project::where('pdf_hash', $uploadedFileHash)
                                 ->where('tipo', $request->tipo)
                                 ->first();
@@ -74,14 +70,15 @@ class ProjectController extends Controller
 
         QrCode::format('svg')->size(300)->generate($url, storage_path('app/public/' . $qrFileName));
 
-        // 5. Guardar (Incluyendo el hash)
+        // 5. Guardar (Ahora guardamos todo)
         Project::create([
             'titulo' => $request->titulo,
             'tipo' => $request->tipo,
             'categoria' => $request->categoria,
             'fecha' => $request->fecha,
+            'descripcion' => $request->descripcion, // GUARDAMOS LA DESCRIPCIÓN
             'pdf_path' => $pdfPath,
-            'pdf_hash' => $uploadedFileHash, // Guardamos el hash
+            'pdf_hash' => $uploadedFileHash,
             'imagen_path' => $imagenPath,
             'qr_path' => $qrFileName,
             'user_id' => auth()->id(),
@@ -101,13 +98,6 @@ class ProjectController extends Controller
         $project = Project::findOrFail($id);
 
         $request->validate([
-            'tipo' => 'required|in:Proyecto,Ordenanza',
-            'fecha' => 'required|date',
-            'categoria' => 'required|string',
-            'pdf' => 'nullable|mimes:pdf|max:20480',
-            'imagen' => 'nullable|image|max:10240',
-            
-            // VALIDACIÓN TÍTULO (Ignorando el proyecto actual para que no de error al guardar lo mismo)
             'titulo' => [
                 'required',
                 'string',
@@ -116,25 +106,32 @@ class ProjectController extends Controller
                     return $query->where('tipo', $request->tipo);
                 })->ignore($project->id),
             ],
+            'tipo' => 'required|in:Proyecto,Ordenanza', // VALIDAMOS TIPO AL EDITAR
+            'fecha' => 'required|date',
+            'categoria' => 'required|string',
+            'descripcion' => 'nullable|string', // VALIDAMOS DESCRIPCIÓN
+            'pdf' => 'nullable|mimes:pdf|max:20480',
+            'imagen' => 'nullable|image|max:10240', // VALIDAMOS IMAGEN
         ], [
             'titulo.unique' => 'Ya existe otro documento de tipo "' . $request->tipo . '" con este título.'
         ]);
 
-        // 1. Lógica Imagen
+        // 1. Lógica Imagen (NUEVO: Ahora permite actualizar imagen)
         if ($request->hasFile('imagen')) {
+            // Borrar vieja
             if ($project->imagen_path) Storage::disk('public')->delete($project->imagen_path);
+            // Guardar nueva
             $project->imagen_path = $request->file('imagen')->store('project_images', 'public');
         }
 
         // 2. Lógica PDF (Solo si suben uno nuevo)
         if ($request->hasFile('pdf')) {
-            
-            // A. Chequeo de duplicados (Hash) ignorando el actual
+            // A. Chequeo de duplicados
             $newFileHash = hash_file('sha256', $request->file('pdf')->getRealPath());
             
             $duplicatePdf = Project::where('pdf_hash', $newFileHash)
                                     ->where('tipo', $request->tipo)
-                                    ->where('id', '!=', $project->id) // Importante: ignorar este mismo proyecto
+                                    ->where('id', '!=', $project->id)
                                     ->first();
 
             if ($duplicatePdf) {
@@ -150,7 +147,7 @@ class ProjectController extends Controller
             // C. Subir nuevos
             $pdfPath = $request->file('pdf')->store('pdfs', 'public');
             $project->pdf_path = $pdfPath;
-            $project->pdf_hash = $newFileHash; // Actualizar hash
+            $project->pdf_hash = $newFileHash;
 
             // D. Regenerar QR
             $url = asset('storage/' . $pdfPath);
@@ -163,14 +160,17 @@ class ProjectController extends Controller
             $project->qr_path = $qrFileName;
         }
 
-        // 3. Actualizar Textos
+        // 3. Actualizar Textos (Incluyendo Tipo y Descripción)
         $project->update([
             'titulo' => $request->titulo,
-            'tipo' => $request->tipo,
+            'tipo' => $request->tipo, // ACTUALIZAMOS TIPO
             'fecha' => $request->fecha,
             'categoria' => $request->categoria,
+            'descripcion' => $request->descripcion, // ACTUALIZAMOS DESCRIPCIÓN
+            // imagen_path y pdf_path ya se actualizaron arriba si fue necesario
         ]);
         
+        // Guardar explícitamente para asegurar cambios en paths
         $project->save();
 
         return redirect()->route('projects.index')->with('success', 'Proyecto actualizado correctamente.');
@@ -178,7 +178,6 @@ class ProjectController extends Controller
 
     public function destroy($id)
     {
-        // ... (Tu código de destroy se mantiene igual) ...
         $rol = auth()->user()->role;
         $rolesPermitidos = ['Admin', 'admin', 'Administrador', 'Colaborador', 'colaborador'];
 
@@ -202,44 +201,35 @@ class ProjectController extends Controller
      */
     public function publicIndex(Request $request)
     {
-        // 1. Iniciamos la consulta base
         $query = Project::query();
 
-        // 2. Filtro por Buscador (Título)
         if ($request->filled('search')) {
             $query->where('titulo', 'like', '%' . $request->search . '%');
         }
 
-        // 3. Filtro por Tipo (Proyecto / Ordenanza)
         if ($request->filled('tipo')) {
             $query->where('tipo', $request->tipo);
         }
-
-        // 4. Filtro por Categoría
         if ($request->filled('categoria')) {
             $query->where('categoria', $request->categoria);
         }
 
-        // 5. Ordenamiento
-        switch ($request->get('orden', 'fecha_desc')) { // 'fecha_desc' es el default
+        switch ($request->get('orden', 'fecha_desc')) {
             case 'alpha_asc':
-                $query->orderBy('titulo', 'asc'); // A-Z
+                $query->orderBy('titulo', 'asc');
                 break;
             case 'alpha_desc':
-                $query->orderBy('titulo', 'desc'); // Z-A
+                $query->orderBy('titulo', 'desc');
                 break;
             case 'cat_asc':
-                $query->orderBy('categoria', 'asc'); // Por Categoría
+                $query->orderBy('categoria', 'asc');
                 break;
             case 'fecha_asc':
-                $query->orderBy('fecha', 'asc'); // Más viejos primero
+                $query->orderBy('fecha', 'asc');
                 break;
-            default: // fecha_desc
-                $query->orderBy('fecha', 'desc'); // Más nuevos primero
+            default:
+                $query->orderBy('fecha', 'desc');
         }
-
-        // 6. Paginación (Mostramos 9 por página)
-        // append($request->query()) mantiene los filtros al cambiar de página
         $projects = $query->paginate(9)->withQueryString();
 
         return view('projects.public_index', compact('projects'));

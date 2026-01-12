@@ -1,56 +1,73 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Editar Proyecto') }}
+            {{ __('Editar Documento') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                
+                <form action="{{ route('projects.update', $project->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                    @csrf
+                    @method('PUT')
 
-                    <form method="POST" action="{{ route('projects.update', $project->id) }}" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT') <div class="mb-4">
-                            <label for="titulo" class="block text-gray-700 text-sm font-bold mb-2">Título:</label>
-                            <input type="text" name="titulo" value="{{ $project->titulo }}" class="border rounded w-full py-2 px-3 text-gray-700" required>
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700">Tipo de Documento</label>
+                        <select name="tipo" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full mt-1">
+                            <option value="Proyecto" {{ $project->tipo == 'Proyecto' ? 'selected' : '' }}>Proyecto</option>
+                            <option value="Ordenanza" {{ $project->tipo == 'Ordenanza' ? 'selected' : '' }}>Ordenanza</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700">Título</label>
+                        <input type="text" name="titulo" value="{{ $project->titulo }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full mt-1" required>
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700">Categoría</label>
+                        <select name="categoria" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full mt-1">
+                            @foreach(['Salud', 'Obras Públicas', 'Educación', 'Social', 'Deporte', 'Otros'] as $cat)
+                                <option value="{{ $cat }}" {{ $project->categoria == $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700">Fecha de Presentación</label>
+                        <input type="date" name="fecha" value="{{ $project->fecha }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full mt-1" required>
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700">Descripción (Opcional)</label>
+                        <textarea name="descripcion" rows="3" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full mt-1">{{ $project->descripcion }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700">Archivo PDF Actual (Subir solo para cambiar)</label>
+                        <div class="flex items-center gap-4">
+                            <a href="{{ asset('storage/'.$project->pdf_path) }}" target="_blank" class="text-blue-600 underline text-sm">Ver actual</a>
+                            <input type="file" name="pdf" accept=".pdf" class="border border-gray-300 rounded-md w-full p-2">
                         </div>
+                    </div>
 
-                        <div class="mb-4">
-                            <label for="categoria" class="block text-gray-700 text-sm font-bold mb-2">Categoría:</label>
-                            <select name="categoria" class="border rounded w-full py-2 px-3 text-gray-700">
-                                @foreach(['Salud', 'Obras Públicas', 'Educación', 'Transporte', 'Seguridad', 'Otro'] as $cat)
-                                    <option value="{{ $cat }}" {{ $project->categoria == $cat ? 'selected' : '' }}>{{ $cat }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700">Imagen de Portada Actual (Subir solo para cambiar)</label>
+                        @if($project->imagen_path)
+                            <div class="mb-2">
+                                <img src="{{ asset('storage/'.$project->imagen_path) }}" class="h-20 w-auto rounded border">
+                            </div>
+                        @endif
+                        <input type="file" name="imagen" accept="image/*" class="border border-gray-300 rounded-md w-full p-2">
+                    </div>
 
-                        <div class="mb-4">
-                            <label for="fecha" class="block text-gray-700 text-sm font-bold mb-2">Fecha:</label>
-                            <input type="date" name="fecha" value="{{ $project->fecha }}" class="border rounded w-full py-2 px-3 text-gray-700" required>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="descripcion" class="block text-gray-700 text-sm font-bold mb-2">Descripción:</label>
-                            <textarea name="descripcion" rows="3" class="border rounded w-full py-2 px-3 text-gray-700">{{ $project->descripcion }}</textarea>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="block text-gray-700 text-sm font-bold mb-2">Archivo PDF Actual:</label>
-                            <p class="text-sm text-gray-500 mb-2">Si no seleccionas uno nuevo, se mantendrá el actual.</p>
-                            <input type="file" name="pdf_file" accept="application/pdf" class="border rounded w-full py-2 px-3 text-gray-700">
-                        </div>
-
-                        <div class="flex items-center justify-end">
-                            <a href="{{ route('projects.index') }}" class="text-gray-600 hover:text-gray-900 mr-4 font-bold text-sm">Cancelar</a>
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">
-                                Actualizar Proyecto
-                            </button>
-                        </div>
-                    </form>
-
-                </div>
+                    <div class="flex justify-end gap-2">
+                        <a href="{{ route('projects.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancelar</a>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Actualizar Proyecto</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
