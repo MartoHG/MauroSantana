@@ -23,7 +23,7 @@ class ProjectController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validaciones Completas (Incluye descripción)
+        
         $request->validate([
             'titulo' => [
                 'required',
@@ -36,12 +36,12 @@ class ProjectController extends Controller
             'fecha' => 'required|date',
             'pdf' => 'required|mimes:pdf|max:20480',
             'imagen' => 'nullable|image|max:10240',
-            'descripcion' => 'nullable|string', // AHORA SE VALIDA LA DESCRIPCIÓN
+            'descripcion' => 'nullable|string', 
         ], [
             'titulo.unique' => 'Ya existe un documento de tipo "' . $request->tipo . '" con este título exacto.'
         ]);
 
-        // 2. Control de Duplicados de PDF (Hash)
+        // Control de Duplicados de PDF, La informacion del pdf se Hashea y gracias a ello se puede hacer un control de duplicados mas efectivo
         $uploadedFileHash = hash_file('sha256', $request->file('pdf')->getRealPath());
         $duplicatePdf = Project::where('pdf_hash', $uploadedFileHash)
                                 ->where('tipo', $request->tipo)
