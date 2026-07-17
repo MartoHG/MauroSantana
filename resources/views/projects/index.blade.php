@@ -1,114 +1,89 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Proyectos Legislativos') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-mauro-dark leading-tight">
+                {{ __('Proyectos y ordenanzas') }}
+            </h2>
+            @can('create', \App\Models\Project::class)
+                <a href="{{ route('projects.create') }}"
+                   class="inline-flex items-center gap-2 rounded-lg bg-mauro-blue px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-mauro-blue-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-mauro-blue-dark focus-visible:ring-offset-2">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    Cargar documento
+                </a>
+            @endcan
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-                    @if(session('success'))
-                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                            <strong class="font-bold">¡Éxito!</strong>
-                            <span class="block sm:inline">{{ session('success') }}</span>
-                        </div>
-                    @endif
+        @if(session('success'))
+            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">{{ session('success') }}</div>
+        @endif
 
-                    
-                    <div class="flex justify-end mb-4">
-                        <a href="{{ route('projects.create') }}" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">
-                            + Subir Nuevo Proyecto
-                        </a>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white border border-gray-200">
-                            <thead>
-                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                                    <th class="py-3 px-6 text-left">Título</th>
-                                    <th class="py-3 px-6 text-left">Categoría</th>
-                                    <th class="py-3 px-6 text-center">Fecha</th>
-                                    <th class="py-3 px-6 text-center">Archivo</th>
-                                    <th class="py-3 px-6 text-center">QR</th>
-                                    <th class="py-3 px-6 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-<tbody class="text-gray-600 text-sm font-light">
-    @foreach ($projects as $project)
-    <tr class="border-b border-gray-200 hover:bg-gray-100">
-        
-        <td class="py-3 px-6 text-left whitespace-nowrap">
-            <div class="flex items-center">
-                <span class="font-medium">{{ $project->titulo }}</span>
-            </div>
-        </td>
-        
-        <td class="py-3 px-6 text-left">
-            <span class="bg-blue-200 text-blue-600 py-1 px-3 rounded-full text-xs">
-                {{ $project->categoria }}
-            </span>
-        </td>
-
-        <td class="py-3 px-6 text-center">
-            {{ \Carbon\Carbon::parse($project->fecha)->format('d/m/Y') }}
-        </td>
-
-        <td class="py-3 px-6 text-center">
-            <a href="{{ asset('storage/' . $project->pdf_path) }}" target="_blank" class="text-red-500 hover:text-red-700 font-bold underline">
-                Ver PDF
-            </a>
-        </td>
-
-        <td class="py-3 px-6 text-center">
-            @if($project->qr_path)
-                <div class="flex flex-col items-center">
-                    <img src="{{ asset('storage/' . $project->qr_path) }}" alt="QR" class="w-12 h-12 mb-1">
-                    <a href="{{ asset('storage/' . $project->qr_path) }}" download="QR_{{ $project->titulo }}.svg" class="text-xs text-blue-500 hover:underline">
-                        Descargar
-                    </a>
-                </div>
-            @else
-                <span class="text-gray-400 text-xs">Sin QR</span>
-            @endif
-        </td>
-
-        <td class="py-3 px-6 text-center">
-            <div class="flex item-center justify-center space-x-2">
-                
-                <a href="{{ route('projects.edit', $project->id) }}" class="p-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-600 rounded-full transition duration-150 ease-in-out" title="Editar">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                </a>
-
-{{-- Botón ELIMINAR (Ahora visible para todos los que acceden aquí) --}}
-<form action="{{ route('projects.destroy', $project->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de querer eliminar este proyecto?');" class="inline">
-    @csrf
-    @method('DELETE')
-    <button type="submit" class="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-full transition duration-150 ease-in-out" title="Eliminar">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-    </button>
-</form>
-            </div>
-        </td>
-    </tr>
-    @endforeach
-</tbody>
-                        </table>
-                        
-                        @if($projects->isEmpty())
-                            <div class="text-center py-4 text-gray-500">
-                                No hay proyectos cargados aún.
-                            </div>
-                        @endif
-                    </div>
-
-                </div>
+        <div class="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-100 text-sm">
+                    <thead class="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                        <tr>
+                            <th class="px-6 py-3 text-left font-semibold">Título</th>
+                            <th class="px-6 py-3 text-left font-semibold">Tipo</th>
+                            <th class="px-6 py-3 text-left font-semibold">Categoría</th>
+                            <th class="px-6 py-3 text-left font-semibold">Fecha</th>
+                            <th class="px-6 py-3 text-center font-semibold">Archivo</th>
+                            <th class="px-6 py-3 text-center font-semibold">QR</th>
+                            <th class="px-6 py-3 text-right font-semibold">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse ($projects as $project)
+                            <tr class="hover:bg-gray-50/70">
+                                <td class="px-6 py-3 font-medium text-mauro-dark max-w-xs truncate">{{ $project->titulo }}</td>
+                                <td class="px-6 py-3"><x-tipo-badge :tipo="$project->tipo" /></td>
+                                <td class="px-6 py-3 text-gray-600">{{ $project->categoria }}</td>
+                                <td class="px-6 py-3 text-gray-600 whitespace-nowrap">{{ \Illuminate\Support\Carbon::parse($project->fecha)->format('d/m/Y') }}</td>
+                                <td class="px-6 py-3 text-center">
+                                    <a href="{{ asset('storage/' . $project->pdf_path) }}" target="_blank" rel="noopener"
+                                       class="font-semibold text-mauro-blue-dark hover:underline">Ver PDF</a>
+                                </td>
+                                <td class="px-6 py-3">
+                                    @if($project->qr_path)
+                                        <div class="flex flex-col items-center gap-1">
+                                            <img src="{{ asset('storage/' . $project->qr_path) }}" alt="Código QR de {{ $project->titulo }}" class="w-12 h-12">
+                                            <a href="{{ asset('storage/' . $project->qr_path) }}" download="QR_{{ $project->titulo }}.svg"
+                                               class="text-xs font-semibold text-mauro-blue-dark hover:underline">Descargar</a>
+                                        </div>
+                                    @else
+                                        <span class="block text-center text-xs text-gray-400">Sin QR</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-3">
+                                    <div class="flex items-center justify-end gap-3">
+                                        @can('update', $project)
+                                            <a href="{{ route('projects.edit', $project) }}" class="font-semibold text-mauro-blue-dark hover:underline">Editar</a>
+                                        @endcan
+                                        @can('delete', $project)
+                                            <form action="{{ route('projects.destroy', $project) }}" method="POST"
+                                                  onsubmit="return confirm('¿Eliminar «{{ $project->titulo }}»?');" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="font-semibold text-red-600 hover:underline">Eliminar</button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                    Todavía no hay documentos cargados.
+                                    @can('create', \App\Models\Project::class)
+                                        <a href="{{ route('projects.create') }}" class="ml-1 font-semibold text-mauro-blue-dark hover:underline">Cargar el primero &rarr;</a>
+                                    @endcan
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

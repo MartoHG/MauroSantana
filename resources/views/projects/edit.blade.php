@@ -1,74 +1,99 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Editar Documento') }}
+        <h2 class="font-semibold text-xl text-mauro-dark leading-tight">
+            {{ __('Editar documento') }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                
-                <form action="{{ route('projects.update', $project->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                    @csrf
-                    @method('PUT')
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="rounded-xl border border-gray-200 bg-white shadow-sm p-6 sm:p-8">
 
-                    <div>
-                        <label class="block font-medium text-sm text-gray-700">Tipo de Documento</label>
-                        <select name="tipo" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full mt-1">
-                            <option value="Proyecto" {{ $project->tipo == 'Proyecto' ? 'selected' : '' }}>Proyecto</option>
-                            <option value="Ordenanza" {{ $project->tipo == 'Ordenanza' ? 'selected' : '' }}>Ordenanza</option>
-                        </select>
-                    </div>
+            @if($errors->any())
+                <div class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                    <p class="font-semibold">Revisá los siguientes puntos:</p>
+                    <ul class="mt-1 list-disc list-inside space-y-0.5">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-                    <div>
-                        <label class="block font-medium text-sm text-gray-700">Título</label>
-                        <input type="text" name="titulo" value="{{ $project->titulo }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full mt-1" required>
-                    </div>
+            <form action="{{ route('projects.update', $project) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                @csrf
+                @method('PUT')
 
-                    <div>
-                        <label class="block font-medium text-sm text-gray-700">Categoría</label>
-                        <select name="categoria" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full mt-1">
-                            @foreach(['Salud', 'Obras Públicas', 'Educación', 'Social', 'Deporte', 'Otros'] as $cat)
-                                <option value="{{ $cat }}" {{ $project->categoria == $cat ? 'selected' : '' }}>{{ $cat }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                <div>
+                    <x-input-label for="tipo" :value="__('Tipo de documento')" />
+                    <select name="tipo" id="tipo"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-mauro-blue focus:ring-mauro-blue">
+                        @foreach(['Proyecto', 'Ordenanza'] as $tipo)
+                            <option value="{{ $tipo }}" @selected(old('tipo', $project->tipo) === $tipo)>{{ $tipo }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('tipo')" class="mt-1" />
+                </div>
 
-                    <div>
-                        <label class="block font-medium text-sm text-gray-700">Fecha de Presentación</label>
-                        <input type="date" name="fecha" value="{{ $project->fecha }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full mt-1" required>
-                    </div>
+                <div>
+                    <x-input-label for="titulo" :value="__('Título')" />
+                    <x-text-input id="titulo" name="titulo" type="text" class="mt-1 block w-full" :value="old('titulo', $project->titulo)" required />
+                    <x-input-error :messages="$errors->get('titulo')" class="mt-1" />
+                </div>
 
-                    <div>
-                        <label class="block font-medium text-sm text-gray-700">Descripción (Opcional)</label>
-                        <textarea name="descripcion" rows="3" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full mt-1">{{ $project->descripcion }}</textarea>
-                    </div>
+                <div>
+                    <x-input-label for="categoria" :value="__('Categoría')" />
+                    <select name="categoria" id="categoria"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-mauro-blue focus:ring-mauro-blue">
+                        @foreach(['Salud', 'Obras Públicas', 'Educación', 'Social', 'Deporte', 'Otros'] as $cat)
+                            <option value="{{ $cat }}" @selected(old('categoria', $project->categoria) === $cat)>{{ $cat }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('categoria')" class="mt-1" />
+                </div>
 
-                    <div>
-                        <label class="block font-medium text-sm text-gray-700">Archivo PDF Actual (Subir solo para cambiar)</label>
-                        <div class="flex items-center gap-4">
-                            <a href="{{ asset('storage/'.$project->pdf_path) }}" target="_blank" class="text-blue-600 underline text-sm">Ver actual</a>
-                            <input type="file" name="pdf" accept=".pdf" class="border border-gray-300 rounded-md w-full p-2">
-                        </div>
-                    </div>
+                <div>
+                    <x-input-label for="fecha" :value="__('Fecha de presentación')" />
+                    <x-text-input id="fecha" name="fecha" type="date" class="mt-1 block w-full" :value="old('fecha', $project->fecha)" required />
+                    <x-input-error :messages="$errors->get('fecha')" class="mt-1" />
+                </div>
 
-                    <div>
-                        <label class="block font-medium text-sm text-gray-700">Imagen de Portada Actual (Subir solo para cambiar)</label>
-                        @if($project->imagen_path)
-                            <div class="mb-2">
-                                <img src="{{ asset('storage/'.$project->imagen_path) }}" class="h-20 w-auto rounded border">
-                            </div>
-                        @endif
-                        <input type="file" name="imagen" accept="image/*" class="border border-gray-300 rounded-md w-full p-2">
-                    </div>
+                <div>
+                    <x-input-label for="descripcion" :value="__('Descripción (opcional)')" />
+                    <textarea name="descripcion" id="descripcion" rows="3"
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-mauro-blue focus:ring-mauro-blue">{{ old('descripcion', $project->descripcion) }}</textarea>
+                    <x-input-error :messages="$errors->get('descripcion')" class="mt-1" />
+                </div>
 
-                    <div class="flex justify-end gap-2">
-                        <a href="{{ route('projects.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancelar</a>
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Actualizar Proyecto</button>
+                <div>
+                    <x-input-label :value="__('Archivo PDF')" />
+                    <div class="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <a href="{{ asset('storage/'.$project->pdf_path) }}" target="_blank" rel="noopener"
+                           class="text-sm font-semibold text-mauro-blue-dark hover:underline whitespace-nowrap">Ver PDF actual</a>
+                        <input type="file" name="pdf" id="pdf" accept="application/pdf"
+                               class="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-mauro-blue-light file:px-4 file:py-2 file:text-sm file:font-semibold file:text-mauro-blue-dark hover:file:bg-mauro-blue-soft">
                     </div>
-                </form>
-            </div>
+                    <p class="mt-1 text-xs text-gray-500">Subí un archivo solo si querés reemplazar el actual (se regenera el QR).</p>
+                    <x-input-error :messages="$errors->get('pdf')" class="mt-1" />
+                </div>
+
+                <div>
+                    <x-input-label :value="__('Imagen de portada (opcional)')" />
+                    @if($project->imagen_path)
+                        <img src="{{ asset('storage/'.$project->imagen_path) }}" alt="Portada actual" class="mt-1 mb-2 h-20 w-auto rounded border border-gray-200">
+                    @endif
+                    <input type="file" name="imagen" id="imagen" accept="image/*"
+                           class="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-gray-200">
+                    <x-input-error :messages="$errors->get('imagen')" class="mt-1" />
+                </div>
+
+                <div class="flex items-center justify-end gap-4 pt-2">
+                    <a href="{{ route('projects.index') }}" class="text-sm font-semibold text-gray-500 hover:text-gray-700">Cancelar</a>
+                    <button type="submit"
+                            class="inline-flex items-center rounded-lg bg-mauro-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-mauro-blue-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-mauro-blue-dark focus-visible:ring-offset-2">
+                        Actualizar documento
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </x-app-layout>

@@ -1,58 +1,50 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+<nav x-data="{ open: false }" class="bg-white border-b border-gray-200 border-t-4 border-t-mauro-blue">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
+                <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
+                        <img src="{{ asset('images/logo.png') }}" alt="Mauro Santana · Concejal" class="h-11 w-11 object-contain">
+                        <span class="hidden lg:block leading-tight">
+                            <span class="block text-sm font-bold text-mauro-dark tracking-tight">Mauro Santana</span>
+                            <span class="block text-[11px] font-semibold uppercase tracking-widest text-mauro-blue-dark">Panel legislativo</span>
+                        </span>
                     </a>
                 </div>
 
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    
-                    {{-- 1. Dashboard --}}
+                <!-- Navigation Links -->
+                <div class="hidden space-x-6 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
+                        {{ __('Panel') }}
                     </x-nav-link>
 
-                    {{-- 2. Proyectos (Visible para todos) --}}
                     <x-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')">
                         {{ __('Proyectos') }}
                     </x-nav-link>
 
-                    {{-- 3. Usuarios (SOLO ADMIN) --}}
-                    {{-- Usamos in_array para aceptar 'Admin', 'admin' o 'Administrador' --}}
-                    @if(in_array(auth()->user()->role, ['Admin', 'admin', 'Administrador']))
+                    @can('viewAny', \App\Models\User::class)
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                             {{ __('Usuarios') }}
                         </x-nav-link>
-                    @endif
+                    @endcan
                 </div>
             </div>
 
+            <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            
-                            {{-- LÓGICA DEL BADGE DE ROL --}}
-                            @php
-                                $userRole = Auth::user()->role;
-                                // Verificamos si es Admin (aceptando variantes)
-                                $isAdmin = in_array($userRole, ['Admin', 'admin', 'Administrador']);
-                                
-                                // Asignamos clases: Rojo para Admin, Verde para el resto
-                                $roleClasses = $isAdmin 
-                                    ? 'bg-red-100 text-red-700 border border-red-200' 
-                                    : 'bg-green-100 text-green-700 border border-green-200';
-                            @endphp
-
-                            {{-- Badge visual del Rol --}}
-                            <span class="{{ $roleClasses }} px-2 py-0.5 rounded-full text-xs font-bold mr-2 uppercase tracking-wide">
-                                {{ $userRole }}
+                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-600 bg-white hover:text-mauro-dark hover:bg-gray-50 focus:outline-none transition ease-in-out duration-150">
+                            @php($rol = auth()->user()->role)
+                            <span @class([
+                                'px-2 py-0.5 rounded-full text-[10px] font-bold mr-2 uppercase tracking-wide border',
+                                'bg-mauro-blue-light text-mauro-blue-dark border-mauro-blue/40' => auth()->user()->isAdmin(),
+                                'bg-gray-100 text-gray-600 border-gray-200' => ! auth()->user()->isAdmin(),
+                            ])>
+                                {{ $rol->label() }}
                             </span>
 
-                            {{-- Nombre del Usuario --}}
                             <div>{{ Auth::user()->name }}</div>
 
                             <div class="ms-1">
@@ -65,24 +57,24 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Perfil') }}
                         </x-dropdown-link>
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
-                                {{ __('Log Out') }}
+                                {{ __('Cerrar sesión') }}
                             </x-dropdown-link>
                         </form>
                     </x-slot>
                 </x-dropdown>
             </div>
 
+            <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-mauro-dark hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-mauro-dark transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -92,50 +84,45 @@
         </div>
     </div>
 
+    <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            
-            {{-- 1. Dashboard Móvil --}}
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
+                {{ __('Panel') }}
             </x-responsive-nav-link>
 
-            {{-- 2. Proyectos Móvil --}}
             <x-responsive-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')">
                 {{ __('Proyectos') }}
             </x-responsive-nav-link>
 
-            {{-- 3. Usuarios (SOLO ADMIN) --}}
-            @if(in_array(auth()->user()->role, ['Admin', 'admin', 'Administrador']))
+            @can('viewAny', \App\Models\User::class)
                 <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                     {{ __('Usuarios') }}
                 </x-responsive-nav-link>
-            @endif
-
+            @endcan
         </div>
 
+        <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
-                {{-- Aquí también mostramos el rol en móvil --}}
-                <div class="font-medium text-base text-gray-800">
-                    {{ Auth::user()->name }} 
-                    <span class="text-xs text-gray-500">({{ Auth::user()->role }})</span>
+                <div class="font-medium text-base text-mauro-dark">
+                    {{ Auth::user()->name }}
+                    <span class="text-xs text-gray-500">({{ auth()->user()->role->label() }})</span>
                 </div>
                 <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    {{ __('Perfil') }}
                 </x-responsive-nav-link>
 
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-
                     <x-responsive-nav-link :href="route('logout')"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">
-                        {{ __('Log Out') }}
+                        {{ __('Cerrar sesión') }}
                     </x-responsive-nav-link>
                 </form>
             </div>

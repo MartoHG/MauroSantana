@@ -1,125 +1,77 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Gestión de Usuarios') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-mauro-dark leading-tight">
+                {{ __('Gestión de usuarios') }}
+            </h2>
+            <a href="{{ route('users.create') }}"
+               class="inline-flex items-center gap-2 rounded-lg bg-mauro-blue px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-mauro-blue-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-mauro-blue-dark focus-visible:ring-offset-2">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                Nuevo usuario
+            </a>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-                    {{-- MENSAJE DE ÉXITO --}}
-                    @if(session('success'))
-                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                            <strong class="font-bold">¡Éxito!</strong>
-                            <span class="block sm:inline">{{ session('success') }}</span>
-                        </div>
-                    @endif
-                    {{-- MENSAJE DE ERROR --}}
-@if(session('error'))
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-        <strong class="font-bold">¡Error!</strong>
-        <span class="block sm:inline">{{ session('error') }}</span>
-    </div>
-@endif
+        @if(session('success'))
+            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">{{ session('success') }}</div>
+        @endif
+        @if(session('error'))
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{{ session('error') }}</div>
+        @endif
 
-                    {{-- BARRA DE BOTONES (Volver y Crear) --}}
-                    <div class="flex justify-between items-center mb-6">
-                        
-                        {{-- Botón Volver al Dashboard --}}
-                        <a href="{{ route('dashboard') }}" class="flex items-center text-gray-600 hover:text-gray-900 font-bold transition">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                            </svg>
-                            Volver al Dashboard
-                        </a>
-
-                        {{-- Botón Crear Nuevo Usuario --}}
-                        <a href="{{ route('users.create') }}" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded shadow hover:shadow-lg transition">
-                            + Crear Nuevo Usuario
-                        </a>
-                    </div>
-
-                    {{-- TABLA DE USUARIOS --}}
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white border border-gray-200">
-                            <thead>
-                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                                    <th class="py-3 px-6 text-left">Nombre</th>
-                                    <th class="py-3 px-6 text-left">Email</th>
-                                    <th class="py-3 px-6 text-center">Rol</th>
-                                    <th class="py-3 px-6 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-gray-600 text-sm font-light">
-                                @foreach ($users as $user)
-                                    <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                        
-                                        {{-- Nombre --}}
-                                        <td class="py-3 px-6 text-left whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <span class="font-medium">{{ $user->name }}</span>
-                                            </div>
-                                        </td>
-                                        
-                                        {{-- Email --}}
-                                        <td class="py-3 px-6 text-left">
-                                            <span>{{ $user->email }}</span>
-                                        </td>
-
-                                        {{-- Rol --}}
-                                        <td class="py-3 px-6 text-center">
-                                            {{-- Ajusta el color según el rol --}}
-                                            @php
-                                                // Verifica si tu columna se llama 'role', 'rol', o 'type'
-                                                $rol = $user->role ?? $user->rol ?? 'Usuario'; 
-                                                $badgeColor = ($rol === 'Admin' || $rol === 'Administrador') ? 'bg-red-200 text-red-600' : 'bg-green-200 text-green-600';
-                                            @endphp
-                                            <span class="{{ $badgeColor }} py-1 px-3 rounded-full text-xs font-bold">
-                                                {{ $rol }}
-                                            </span>
-                                        </td>
-
-                                        {{-- Acciones (Editar / Eliminar) --}}
-                                        <td class="py-3 px-6 text-center">
-                                            <div class="flex item-center justify-center space-x-2">
-                                                
-                                                {{-- Editar --}}
-                                                <a href="{{ route('users.edit', $user->id) }}" class="p-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-600 rounded-full transition duration-150 ease-in-out" title="Editar">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                    </svg>
-                                                </a>
-
-                                                {{-- Eliminar --}}
-                                                <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este usuario?');" class="inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-full transition duration-150 ease-in-out" title="Eliminar">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
-
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                        
-                        {{-- Mensaje si no hay usuarios --}}
-                        @if($users->isEmpty())
-                            <div class="text-center py-4 text-gray-500">
-                                No hay usuarios registrados.
-                            </div>
-                        @endif
-                    </div>
-
-                </div>
+        <div class="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-100 text-sm">
+                    <thead class="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                        <tr>
+                            <th class="px-6 py-3 text-left font-semibold">Nombre</th>
+                            <th class="px-6 py-3 text-left font-semibold">Email</th>
+                            <th class="px-6 py-3 text-left font-semibold">Rol</th>
+                            <th class="px-6 py-3 text-right font-semibold">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse ($users as $user)
+                            <tr class="hover:bg-gray-50/70">
+                                <td class="px-6 py-3 font-medium text-mauro-dark whitespace-nowrap">
+                                    {{ $user->name }}
+                                    @if(auth()->id() === $user->id)
+                                        <span class="ml-1 text-xs font-normal text-gray-400">(tú)</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-3 text-gray-600">{{ $user->email }}</td>
+                                <td class="px-6 py-3">
+                                    <span @class([
+                                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border',
+                                        'bg-mauro-blue-light text-mauro-blue-dark border-mauro-blue/40' => $user->isAdmin(),
+                                        'bg-gray-100 text-gray-600 border-gray-200' => ! $user->isAdmin(),
+                                    ])>{{ $user->role->label() }}</span>
+                                </td>
+                                <td class="px-6 py-3">
+                                    <div class="flex items-center justify-end gap-3">
+                                        @can('update', $user)
+                                            <a href="{{ route('users.edit', $user) }}" class="font-semibold text-mauro-blue-dark hover:underline">Editar</a>
+                                        @endcan
+                                        @can('delete', $user)
+                                            <form action="{{ route('users.destroy', $user) }}" method="POST"
+                                                  onsubmit="return confirm('¿Eliminar a {{ $user->name }}?');" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="font-semibold text-red-600 hover:underline">Eliminar</button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-10 text-center text-gray-500">No hay usuarios registrados.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

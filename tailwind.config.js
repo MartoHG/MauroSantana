@@ -14,6 +14,23 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                // Paleta de marca "Concejal Mauro Santana".
+                mauro: {
+                    blue: {
+                        light: '#EAF6FC',
+                        soft: '#D3ECF9',
+                        DEFAULT: '#3CA9E2',
+                        dark: '#1F7CAF',
+                    },
+                    yellow: {
+                        DEFAULT: '#FBBF24',
+                        dark: '#D99E00',
+                    },
+                    dark: '#111827',
+                    slate: '#1F2937',
+                },
+            },
         },
     },
 

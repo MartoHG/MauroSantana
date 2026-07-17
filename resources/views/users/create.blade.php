@@ -1,58 +1,61 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Crear Nuevo Usuario') }}
+        <h2 class="font-semibold text-xl text-mauro-dark leading-tight">
+            {{ __('Crear nuevo usuario') }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    
-                    <form method="POST" action="{{ route('users.store') }}">
-                        @csrf
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="rounded-xl border border-gray-200 bg-white shadow-sm p-6 sm:p-8">
+            <form method="POST" action="{{ route('users.store') }}" class="space-y-5">
+                @csrf
 
-                        <div class="mb-4">
-                            <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
-                            <input type="text" name="name" id="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
-                            <input type="email" name="email" id="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="role" class="block text-gray-700 text-sm font-bold mb-2">Rol:</label>
-                            <select name="role" id="role" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                <option value="colaborador">Colaborador</option>
-                                <option value="admin">Administrador</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Contraseña:</label>
-                            <input type="password" name="password" id="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                        </div>
-
-                        <div class="mb-6">
-                            <label for="password_confirmation" class="block text-gray-700 text-sm font-bold mb-2">Confirmar Contraseña:</label>
-                            <input type="password" name="password_confirmation" id="password_confirmation" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                        </div>
-
-                        <div class="flex items-center justify-between">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                Guardar Usuario
-                            </button>
-                            <a href="{{ route('users.index') }}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
-                                Cancelar
-                            </a>
-                        </div>
-                    </form>
-
+                <div>
+                    <x-input-label for="name" :value="__('Nombre')" />
+                    <x-text-input id="name" name="name" type="text" class="mt-1 block w-full"
+                                  :value="old('name')" required autofocus />
+                    <x-input-error :messages="$errors->get('name')" class="mt-1" />
                 </div>
-            </div>
+
+                <div>
+                    <x-input-label for="email" :value="__('Email')" />
+                    <x-text-input id="email" name="email" type="email" class="mt-1 block w-full"
+                                  :value="old('email')" required />
+                    <x-input-error :messages="$errors->get('email')" class="mt-1" />
+                </div>
+
+                <div>
+                    <x-input-label for="role" :value="__('Rol')" />
+                    <select name="role" id="role"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-mauro-blue focus:ring-mauro-blue">
+                        @foreach(\App\Enums\UserRole::options() as $value => $label)
+                            <option value="{{ $value }}" @selected(old('role') === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('role')" class="mt-1" />
+                </div>
+
+                <div>
+                    <x-input-label for="password" :value="__('Contraseña')" />
+                    <x-text-input id="password" name="password" type="password" class="mt-1 block w-full"
+                                  required autocomplete="new-password" />
+                    <x-input-error :messages="$errors->get('password')" class="mt-1" />
+                </div>
+
+                <div>
+                    <x-input-label for="password_confirmation" :value="__('Confirmar contraseña')" />
+                    <x-text-input id="password_confirmation" name="password_confirmation" type="password"
+                                  class="mt-1 block w-full" required autocomplete="new-password" />
+                </div>
+
+                <div class="flex items-center justify-end gap-4 pt-2">
+                    <a href="{{ route('users.index') }}" class="text-sm font-semibold text-gray-500 hover:text-gray-700">Cancelar</a>
+                    <button type="submit"
+                            class="inline-flex items-center rounded-lg bg-mauro-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-mauro-blue-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-mauro-blue-dark focus-visible:ring-offset-2">
+                        Guardar usuario
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </x-app-layout>
