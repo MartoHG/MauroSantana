@@ -9,12 +9,16 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up(): void
-{
-    Schema::table('projects', function (Blueprint $table) {
-        $table->text('descripcion')->nullable()->after('titulo');
-    });
-}
+    public function up(): void
+    {
+        // La columna puede existir ya (la migración de creación la incluye):
+        // guardamos para que la migración sea idempotente en instalaciones nuevas.
+        if (! Schema::hasColumn('projects', 'descripcion')) {
+            Schema::table('projects', function (Blueprint $table) {
+                $table->text('descripcion')->nullable()->after('titulo');
+            });
+        }
+    }
 
     /**
      * Reverse the migrations.

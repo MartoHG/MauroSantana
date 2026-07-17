@@ -1,32 +1,28 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserController; 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
-use App\Models\Project;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    // Buscamos los proyectos ordenados por fecha (del más nuevo al más viejo)
-    $projects = Project::orderBy('fecha', 'desc')->get();
-    
-    // Retornamos la vista 'welcome' enviándole los proyectos
-    return view('welcome', compact('projects'));
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::resource('users', \App\Http\Controllers\UserController::class);
+
+    Route::resource('users', UserController::class);
     Route::resource('projects', ProjectController::class);
 });
 
-// Ruta pública para el buscador avanzado
-Route::get('/labor-legislativa', [App\Http\Controllers\ProjectController::class, 'publicIndex'])->name('projects.public');
+// Buscador público avanzado de labor legislativa.
+Route::get('/labor-legislativa', [ProjectController::class, 'publicIndex'])->name('projects.public');
 
 require __DIR__.'/auth.php';

@@ -9,20 +9,24 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up(): void
-{
-    Schema::table('projects', function (Blueprint $table) {
-        $table->string('pdf_hash')->nullable()->after('pdf_path');
-    });
-}
+    public function up(): void
+    {
+        if (! Schema::hasColumn('projects', 'pdf_hash')) {
+            Schema::table('projects', function (Blueprint $table) {
+                $table->string('pdf_hash')->nullable()->after('pdf_path');
+            });
+        }
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
-            //
-        });
+        if (Schema::hasColumn('projects', 'pdf_hash')) {
+            Schema::table('projects', function (Blueprint $table) {
+                $table->dropColumn('pdf_hash');
+            });
+        }
     }
 };

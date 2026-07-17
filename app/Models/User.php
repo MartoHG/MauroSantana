@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -18,11 +19,23 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-    'name',
-    'email',
-    'password',
-    'role', 
-];
+        'name',
+        'email',
+        'password',
+        'role',
+    ];
+
+    /**
+     * Valores por defecto del modelo. Espeja el default de la columna `role`
+     * para que un usuario recién creado (registro, factory) tenga rol aun
+     * antes de recargarse desde la base de datos.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'role' => UserRole::Colaborador->value,
+    ];
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -43,6 +56,23 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
         ];
+    }
+
+    /**
+     * ¿Es administrador?
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::Admin;
+    }
+
+    /**
+     * ¿Puede gestionar proyectos (cargar/editar/eliminar)?
+     */
+    public function canManageProjects(): bool
+    {
+        return $this->role?->canManageProjects() ?? false;
     }
 }
