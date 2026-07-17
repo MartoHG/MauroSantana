@@ -2,11 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Enums\UserRole;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,22 +14,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@maurosantana.test'],
-            [
-                'name' => 'Mauro Santana',
-                'password' => Hash::make('password'),
-                'role' => UserRole::Admin,
-            ],
-        );
-
-        User::updateOrCreate(
-            ['email' => 'colaborador@maurosantana.test'],
-            [
-                'name' => 'Colaborador de prueba',
-                'password' => Hash::make('password'),
-                'role' => UserRole::Colaborador,
-            ],
-        );
+        $this->call([
+            UserSeeder::class,
+            ProjectSeeder::class,
+        ]);
     }
 }
